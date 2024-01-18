@@ -22,7 +22,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package org.keplerproject.luajava;
+package nirenr.luajava;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

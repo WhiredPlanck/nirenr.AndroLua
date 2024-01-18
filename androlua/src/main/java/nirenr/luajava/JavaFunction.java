@@ -22,7 +22,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package org.keplerproject.luajava;
+package nirenr.luajava;
 
 /**
  * JavaFunction is a class that can be used to implement a Lua function in Java.

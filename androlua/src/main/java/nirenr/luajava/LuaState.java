@@ -22,7 +22,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package org.keplerproject.luajava;
+package nirenr.luajava;
 
 /**
  * LuaState if the main class of LuaJava for the Java developer.

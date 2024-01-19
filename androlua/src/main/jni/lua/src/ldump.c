@@ -9,7 +9,6 @@
 
 #include "lprefix.h"
 
-
 #include <stddef.h>
 
 #include "lua.h"
@@ -20,11 +19,11 @@
 
 
 typedef struct {
-  lua_State *L;
-  lua_Writer writer;
-  void *data;
-  int strip;
-  int status;
+    lua_State *L;
+    lua_Writer writer;
+    void *data;
+    int strip;
+    int status;
 } DumpState;
 
 
@@ -69,20 +68,43 @@ static void DumpInteger (lua_Integer x, DumpState *D) {
   DumpVar(x, D);
 }
 
+#ifdef __ANDROID__
+#include <android/log.h>
+#define LOG_TAG "lua"
+#define LOGD(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+#endif
 
 static void DumpString (const TString *s, DumpState *D) {
   if (s == NULL)
     DumpByte(0, D);
   else {
-    size_t size = tsslen(s) + 1;  /* include trailing '\0' */
+    //nirenr mod
+    //size_t size = tsslen(s) + 1;  /* include trailing '\0' */
+    int size = tsslen(s) + 1;  /* include trailing '\0' */
+#ifndef ALUA_LUAC_ENCRYPT_DUMP
+    const char *buff = getstr(s);
+#else
     const char *str = getstr(s);
+    char buff[size-1];
+    //LOGD("unLoadString %d %s",size,str);
+    int i=0;
+    int len=size-1;
+    int n=len;
+    int c=str[0];
+    for(;i<len;i++){
+      n=n % 255;
+      buff[i]= (char) (str[i] ^ (n));
+      n+=len+c;
+    }
+#endif
+    //LOGD("unLoadString2 %d %s",size,buff);
     if (size < 0xFF)
       DumpByte(cast_int(size), D);
     else {
       DumpByte(0xFF, D);
       DumpVar(size, D);
     }
-    DumpVector(str, size - 1, D);  /* no need to save '\0' */
+    DumpVector(buff, size - 1, D);  /* no need to save '\0' */
   }
 }
 
@@ -103,23 +125,23 @@ static void DumpConstants (const Proto *f, DumpState *D) {
     const TValue *o = &f->k[i];
     DumpByte(ttype(o), D);
     switch (ttype(o)) {
-    case LUA_TNIL:
-      break;
-    case LUA_TBOOLEAN:
-      DumpByte(bvalue(o), D);
-      break;
-    case LUA_TNUMFLT:
-      DumpNumber(fltvalue(o), D);
-      break;
-    case LUA_TNUMINT:
-      DumpInteger(ivalue(o), D);
-      break;
-    case LUA_TSHRSTR:
-    case LUA_TLNGSTR:
-      DumpString(tsvalue(o), D);
-      break;
-    default:
-      lua_assert(0);
+      case LUA_TNIL:
+        break;
+      case LUA_TBOOLEAN:
+        DumpByte(bvalue(o), D);
+            break;
+      case LUA_TNUMFLT:
+        DumpNumber(fltvalue(o), D);
+            break;
+      case LUA_TNUMINT:
+        DumpInteger(ivalue(o), D);
+            break;
+      case LUA_TSHRSTR:
+      case LUA_TLNGSTR:
+        DumpString(tsvalue(o), D);
+            break;
+      default:
+        lua_assert(0);
     }
   }
 }
@@ -187,7 +209,9 @@ static void DumpHeader (DumpState *D) {
   DumpByte(LUAC_FORMAT, D);
   DumpLiteral(LUAC_DATA, D);
   DumpByte(sizeof(int), D);
-  DumpByte(sizeof(size_t), D);
+  //nirenr mod
+  //DumpByte(sizeof(size_t), D);
+  DumpByte(sizeof(unsigned int), D);
   DumpByte(sizeof(Instruction), D);
   DumpByte(sizeof(lua_Integer), D);
   DumpByte(sizeof(lua_Number), D);

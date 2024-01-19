@@ -436,7 +436,8 @@ LUA_API const void *lua_topointer (lua_State *L, int idx) {
     case LUA_TTHREAD: return thvalue(o);
     case LUA_TUSERDATA: return getudatamem(uvalue(o));
     case LUA_TLIGHTUSERDATA: return pvalue(o);
-    case LUA_TSTRING: return svalue(o);
+    case LUA_TSHRSTR: case LUA_TLNGSTR:
+      return svalue(o);
     default: return NULL;
   }
 }
@@ -943,7 +944,6 @@ LUA_API void lua_setuservalue (lua_State *L, int idx) {
      api_check(L, (nr) == LUA_MULTRET || (L->ci->top - L->top >= (nr) - (na)), \
 	"results from function overflow current stack size")
 
-
 LUA_API void lua_callk (lua_State *L, int nargs, int nresults,
                         lua_KContext ctx, lua_KFunction k) {
   StkId func;
@@ -975,12 +975,16 @@ struct CallS {  /* data to 'f_call' */
   int nresults;
 };
 
-
 static void f_call (lua_State *L, void *ud) {
   struct CallS *c = cast(struct CallS *, ud);
   luaD_callnoyield(L, c->func, c->nresults);
 }
 
+#ifdef __ANDROID__
+#include <android/log.h>
+#define LOG_TAG "lua"
+#define LOGD(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+#endif
 
 
 LUA_API int lua_pcallk (lua_State *L, int nargs, int nresults, int errfunc,

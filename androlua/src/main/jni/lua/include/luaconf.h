@@ -271,6 +271,8 @@
 */
 #if defined(__GNUC__) && ((__GNUC__*100 + __GNUC_MINOR__) >= 302) && \
     defined(__ELF__)		/* { */
+//取消隐藏，方便调试符号错误位置
+//#define LUAI_FUNC	extern
 #define LUAI_FUNC	__attribute__((visibility("hidden"))) extern
 #else				/* }{ */
 #define LUAI_FUNC	extern
@@ -329,7 +331,20 @@
 #define luaL_putchar(B,c)   luaL_addchar(B,c)
 #define luaL_reg           luaL_Reg
 #define LUA_GLOBALSINDEX    LUA_RIDX_GLOBALS
+//table lib
 #define	LUA_COMPAT_FOREACH
+//table lib
+#define	LUA_COMPAT_KEYS_VALS
+//base lib
+#define	LUA_COMPAT_DUMP
+//unsafelib lib
+#define	LUA_COMPAT_UNSAFEUTILS
+//table lib
+#define	LUA_COMPAT_TABLIBADD
+//table lib
+#define	LUA_COMPAT_TABLIBFILL
+//encrypt
+//#define ALUA_LUAC_ENCRYPT_DUMP
 
 /* Incompatibilities from 5.2 -> 5.3 */
 #define LUA_COMPAT_MATHLIB

@@ -6,6 +6,7 @@ plugins {
 android {
     namespace = "nirenr.androlua"
     compileSdk = 34
+    ndkVersion = "25.2.9519653"
 
     defaultConfig {
         minSdk = 19
@@ -21,6 +22,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            version = "3.22.1"
+            path("src/main/jni/CMakeLists.txt")
         }
     }
     compileOptions {

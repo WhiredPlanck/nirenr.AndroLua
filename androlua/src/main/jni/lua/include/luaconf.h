@@ -71,12 +71,6 @@
 #define LUA_USE_READLINE	/* needs an extra library: -lreadline */
 #endif
 
-//mod by nirenr
-#ifdef __ANDROID__
-#define LUA_USE_POSIX
-#define LUA_USE_DLOPEN		/* needs an extra library: -ldl */
-//#define LUA_USE_READLINE	/* needs some extra libraries */
-#endif
 
 /*
 @@ LUA_C89_NUMBERS ensures that Lua uses the largest types available for

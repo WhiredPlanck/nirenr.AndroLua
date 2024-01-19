@@ -212,7 +212,7 @@ public class LuaState
 
   // Coroutine Functions
   private synchronized native int _yield(CPtr ptr, int nResults);
-  private synchronized native int _resume(CPtr ptr, int nargs);
+  private synchronized native int _resume(CPtr ptr, CPtr from, int nargs);
   private synchronized native int _status(CPtr ptr);
   
   // Gargabe Collection Functions
@@ -245,8 +245,6 @@ public class LuaState
   
   private synchronized native void _setGlobal(CPtr ptr, String name);
   private synchronized native void _getGlobal(CPtr ptr, String name);
-  
-  private synchronized native int  _getGcCount(CPtr ptr);
 
 
   // LuaLibAux
@@ -598,9 +596,9 @@ public class LuaState
   	return _yield(luaState, nResults);
   }
 
-  public int resume(int nArgs)
+  public int resume(CPtr from, int nArgs)
   {
-  	return _resume(luaState, nArgs);
+  	return _resume(luaState, from, nArgs);
   }
   
   public int status()
@@ -611,11 +609,6 @@ public class LuaState
   public int gc(int what, int data)
   {
     return _gc(luaState, what, data);
-  }
-  
-  public int getGcCount()
-  {
-    return _getGcCount(luaState);
   }
   
   public int next(int idx)

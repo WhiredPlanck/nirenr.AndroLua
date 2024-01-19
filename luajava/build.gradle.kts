@@ -4,8 +4,9 @@ plugins {
 }
 
 android {
-    namespace = "nirenr.androlua"
+    namespace = "nirenr.luajava"
     compileSdk = 34
+    ndkVersion = "25.2.9519653"
 
     defaultConfig {
         minSdk = 19
@@ -23,6 +24,12 @@ android {
             )
         }
     }
+    externalNativeBuild {
+        cmake {
+            path("src/main/jni/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -33,8 +40,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":luajava"))
-    implementation("androidx.appcompat:appcompat:1.6.1")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")

@@ -51,16 +51,16 @@ public class Console
 
          if (args.length > 0)
          {
-            for (int i = 0; i < args.length; i++)
+            for (final String arg : args)
             {
-               int res = L.LloadFile(args[i]);
+               int res = L.LloadFile(arg);
                if (res == 0)
                {
                   res = L.pcall(0, 0, 0);
                }
                if (res != 0)
                {
-                  throw new LuaException("Error on file: " + args[i] + ". " + L.toString(-1));
+                  throw new LuaException("Error on file: " + arg + ". " + L.toString(-1));
                }
             }
 

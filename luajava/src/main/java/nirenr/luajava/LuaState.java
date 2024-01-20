@@ -24,6 +24,9 @@
 
 package nirenr.luajava;
 
+import nirenr.luajava.util.LuaFunction;
+import nirenr.luajava.util.LuaTable;
+
 /**
  * LuaState if the main class of LuaJava for the Java developer.
  * LuaState is a mapping of most of Lua's C API functions.
@@ -35,25 +38,25 @@ public class LuaState
 {
   private final static String LUAJAVA_LIB = "luajava";
 
-  final public static Integer LUA_GLOBALSINDEX  = new Integer(-10002);
-  final public static Integer LUA_REGISTRYINDEX = new Integer(-10000);
+  final public static int LUA_GLOBALSINDEX  = -10002;
+  final public static int LUA_REGISTRYINDEX = -10000;
 
-  final public static Integer LUA_TNONE     = new Integer(-1);
-  final public static Integer LUA_TNIL      = new Integer(0);
-  final public static Integer LUA_TBOOLEAN  = new Integer(1);
-  final public static Integer LUA_TLIGHTUSERDATA = new Integer(2);
-  final public static Integer LUA_TNUMBER   = new Integer(3);
-  final public static Integer LUA_TSTRING   = new Integer(4);
-  final public static Integer LUA_TTABLE    = new Integer(5);
-  final public static Integer LUA_TFUNCTION = new Integer(6);
-  final public static Integer LUA_TUSERDATA = new Integer(7);
-  final public static Integer LUA_TTHREAD   = new Integer(8);
+  final public static int LUA_TNONE     = -1;
+  final public static int LUA_TNIL      = 0;
+  final public static int LUA_TBOOLEAN  = 1;
+  final public static int LUA_TLIGHTUSERDATA = 2;
+  final public static int LUA_TNUMBER   = 3;
+  final public static int LUA_TSTRING   = 4;
+  final public static int LUA_TTABLE    = 5;
+  final public static int LUA_TFUNCTION = 6;
+  final public static int LUA_TUSERDATA = 7;
+  final public static int LUA_TTHREAD   = 8;
 
   /**
    * Specifies that an unspecified (multiple) number of return arguments
    * will be returned by a call.
    */
-  final public static Integer LUA_MULTRET   = new Integer(-1);
+  final public static int LUA_MULTRET   = -1;
   
   /*
    * error codes for `lua_load' and `lua_pcall'
@@ -61,28 +64,28 @@ public class LuaState
   /**
    * a runtime error.
    */
-  final public static Integer LUA_ERRRUN    = new Integer(1);
+  final public static int LUA_ERRRUN    = 1;
   
   /**
    * 
    */
-  final public static Integer LUA_YIELD     = new Integer(2);
+  final public static int LUA_YIELD     = 2;
   
   /**
    * syntax error during pre-compilation.
    */
-  final public static Integer LUA_ERRSYNTAX = new Integer(3);
+  final public static int LUA_ERRSYNTAX = 3;
   
   /**
    * memory allocation error. For such errors, Lua does not call 
    * the error handler function.
    */
-  final public static Integer LUA_ERRMEM    = new Integer(4);
+  final public static int LUA_ERRMEM    = 4;
   
   /**
    * error while running the error handler function.
    */
-  final public static Integer LUA_ERRERR    = new Integer(5);
+  final public static int LUA_ERRERR    = 5;
 
   /**
    * Opens the library containing the luajava API
@@ -94,28 +97,22 @@ public class LuaState
 
   private CPtr luaState;
 
-  private int stateId;
-
   /**
    * Constructor to instance a new LuaState and initialize it with LuaJava's functions
-   * @param stateId
    */
-  protected LuaState(int stateId)
+  protected LuaState()
   {
-    luaState = _open();
-    luajava_open(luaState, stateId);
-    this.stateId = stateId;
+    luaState = _newstate();
   }
 
   /**
    * Receives a existing state and initializes it
-   * @param luaState
+   * @param luaState a CPtr represents the lua state
    */
   protected LuaState(CPtr luaState)
   {
     this.luaState = luaState;
-    this.stateId = LuaStateFactory.insertLuaState(this);
-    luajava_open(luaState, stateId);
+    LuaStateFactory.insertLuaState(this);
   }
 
   /**
@@ -123,7 +120,7 @@ public class LuaState
    */
   public synchronized void close()
   {
-    LuaStateFactory.removeLuaState(stateId);
+    LuaStateFactory.removeLuaState(luaState.getPeer());
     _close(luaState);
     this.luaState = null;
   }
@@ -148,7 +145,7 @@ public class LuaState
 
   /********************* Lua Native Interface *************************/
 
-  private synchronized native CPtr _open();
+  private synchronized native CPtr _newstate();
   private synchronized native void _close(CPtr ptr);
   private synchronized native CPtr _newthread(CPtr ptr);
 
@@ -180,24 +177,24 @@ public class LuaState
   private synchronized native int    _toBoolean(CPtr ptr, int idx);
   private synchronized native String _toString(CPtr ptr, int idx);
   private synchronized native int    _objlen(CPtr ptr, int idx);
+  private synchronized native int    _rawlen(CPtr ptr, int idx);
   private synchronized native CPtr   _toThread(CPtr ptr, int idx);
 
   // Push functions
   private synchronized native void _pushNil(CPtr ptr);
   private synchronized native void _pushNumber(CPtr ptr, double number);
-  private synchronized native void _pushInteger(CPtr ptr, int integer);
+  private synchronized native void _pushInteger(CPtr ptr, long integer);
   private synchronized native void _pushString(CPtr ptr, String str);
   private synchronized native void _pushString(CPtr ptr, byte[] bytes, int n);
   private synchronized native void _pushBoolean(CPtr ptr, int bool);
 
   // Get functions
-  private synchronized native void _getTable(CPtr ptr, int idx);
+  private synchronized native int _getTable(CPtr ptr, int idx);
   private synchronized native void _getField(CPtr ptr, int idx, String k);
   private synchronized native void _rawGet(CPtr ptr, int idx);
   private synchronized native void _rawGetI(CPtr ptr, int idx, int n);
   private synchronized native void _createTable(CPtr ptr, int narr, int nrec);
   private synchronized native int  _getMetaTable(CPtr ptr, int idx);
-  private synchronized native void _getFEnv(CPtr ptr, int idx);
 
   // Set functions
   private synchronized native void _setTable(CPtr ptr, int idx);
@@ -205,7 +202,6 @@ public class LuaState
   private synchronized native void _rawSet(CPtr ptr, int idx);
   private synchronized native void _rawSetI(CPtr ptr, int idx, int n);
   private synchronized native int  _setMetaTable(CPtr ptr, int idx);
-  private synchronized native int  _setFEnv(CPtr ptr, int idx);
 
   private synchronized native void _call(CPtr ptr, int nArgs, int nResults);
   private synchronized native int  _pcall(CPtr ptr, int nArgs, int Results, int errFunc);
@@ -216,14 +212,14 @@ public class LuaState
   private synchronized native int _status(CPtr ptr);
   
   // Gargabe Collection Functions
-  final public static Integer LUA_GCSTOP       = new Integer(0);
-  final public static Integer LUA_GCRESTART    = new Integer(1);
-  final public static Integer LUA_GCCOLLECT    = new Integer(2);
-  final public static Integer LUA_GCCOUNT      = new Integer(3);
-  final public static Integer LUA_GCCOUNTB     = new Integer(4);
-  final public static Integer LUA_GCSTEP       = new Integer(5);
-  final public static Integer LUA_GCSETPAUSE   = new Integer(6);
-  final public static Integer LUA_GCSETSTEPMUL = new Integer(7);
+  final public static int LUA_GCSTOP       = 0;
+  final public static int LUA_GCRESTART    = 1;
+  final public static int LUA_GCCOLLECT    = 2;
+  final public static int LUA_GCCOUNT      = 3;
+  final public static int LUA_GCCOUNTB     = 4;
+  final public static int LUA_GCSTEP       = 5;
+  final public static int LUA_GCSETPAUSE   = 6;
+  final public static int LUA_GCSETSTEPMUL = 7;
   private synchronized native int  _gc(CPtr ptr, int what, int data);
 
   // Miscellaneous Functions
@@ -275,9 +271,6 @@ public class LuaState
   
   private synchronized native int  _Lref(CPtr ptr, int t);
   private synchronized native void _LunRef(CPtr ptr, int t, int ref);
-  
-  private synchronized native int  _LgetN(CPtr ptr, int t);
-  private synchronized native void _LsetN(CPtr ptr, int t, int n);
   
   private synchronized native int _LloadFile(CPtr ptr, String fileName);
   private synchronized native int _LloadBuffer(CPtr ptr, byte[] buff, long sz, String name);
@@ -460,9 +453,24 @@ public class LuaState
 	  return _objlen(luaState, idx);
   }
 
+  public int rawLen(int idx)
+  {
+    return _rawlen(luaState, idx);
+  }
+
   public LuaState toThread(int idx)
   {
     return new LuaState(_toThread(luaState, idx));
+  }
+
+  public <K, V> LuaTable<K, V> toTable(int idx)
+  {
+    return new LuaTable<>(this, idx);
+  }
+
+  public <T> LuaFunction<T> toFunction(int idx)
+  {
+    return new LuaFunction<>(this, idx);
   }
   
   //PUSH FUNCTIONS
@@ -477,7 +485,7 @@ public class LuaState
     _pushNumber(luaState, db);
   }
   
-  public void pushInteger(int integer)
+  public void pushInteger(long integer)
   {
 	  _pushInteger(luaState, integer);
   }
@@ -505,9 +513,9 @@ public class LuaState
 
   // GET FUNCTIONS
 
-  public void getTable(int idx)
+  public int getTable(int idx)
   {
-    _getTable(luaState, idx);
+    return _getTable(luaState, idx);
   }
   
   public void getField(int idx, String k)
@@ -541,10 +549,6 @@ public class LuaState
     return _getMetaTable(luaState, idx);
   }
 
-  public void getFEnv(int idx)
-  {
-    _getFEnv(luaState, idx);
-  }
 
   // SET FUNCTIONS
   
@@ -572,12 +576,6 @@ public class LuaState
   public int setMetaTable(int idx)
   {
     return _setMetaTable(luaState, idx);
-  }
-
-  // if object is not a function returns 0
-  public int setFEnv(int idx)
-  {
-    return _setFEnv(luaState, idx);
   }
 
   public void call(int nArgs, int nResults)
@@ -728,16 +726,6 @@ public class LuaState
   public void LunRef(int t, int ref)
   {
     _LunRef(luaState, t, ref);
-  }
-  
-  public int LgetN(int t)
-  {
-    return _LgetN(luaState, t);
-  }
-  
-  public void LsetN(int t, int n)
-  {
-    _LsetN(luaState, t, n);
   }
   
   public int LloadFile(String fileName)
@@ -983,7 +971,7 @@ public class LuaState
 		{
 			obj = new Boolean(toBoolean(idx));
 		}
-		else if (type(idx) == LuaState.LUA_TSTRING.intValue())
+		else if (type(idx) == LuaState.LUA_TSTRING)
 		{
 			obj = toString(idx);
 		}
@@ -995,7 +983,7 @@ public class LuaState
 		{
 			obj = getLuaObject(idx);
 		}
-		else if (type(idx) == LuaState.LUA_TNUMBER.intValue())
+		else if (type(idx) == LuaState.LUA_TNUMBER)
 		{
 				obj = new Double(toNumber(idx));
 		}

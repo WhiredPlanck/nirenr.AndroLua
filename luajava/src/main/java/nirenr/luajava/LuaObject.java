@@ -28,6 +28,9 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.util.StringTokenizer;
 
+import nirenr.luajava.util.LuaFunction;
+import nirenr.luajava.util.LuaTable;
+
 /**
  * This class represents a Lua object of any type. A LuaObject is constructed by a {@link LuaState} object using one of
  * the four methods:
@@ -53,9 +56,9 @@ import java.util.StringTokenizer;
  */
 public class LuaObject
 {
-	protected Integer ref;
+	protected int ref;
 
-	protected LuaState L;
+	protected final LuaState L;
 
 	/**
 	 * Creates a reference to an object in the variable globalName
@@ -195,8 +198,7 @@ public class LuaObject
 		synchronized (L)
 		{
 			L.pushValue(index);
-			int key = L.Lref(LuaState.LUA_REGISTRYINDEX.intValue());
-			ref = new Integer(key);
+			ref = L.Lref(LuaState.LUA_REGISTRYINDEX);
 		}
 	}
 
@@ -207,7 +209,7 @@ public class LuaObject
 			synchronized (L)
 			{
 				if (L.getCPtrPeer() != 0)
-					L.LunRef(LuaState.LUA_REGISTRYINDEX.intValue(), ref.intValue());
+					L.LunRef(LuaState.LUA_REGISTRYINDEX, ref);
 			}
 		}
 		catch (Exception e)
@@ -221,7 +223,7 @@ public class LuaObject
 	 */
 	public void push()
 	{
-		L.rawGetI(LuaState.LUA_REGISTRYINDEX.intValue(), ref.intValue());
+		L.rawGetI(LuaState.LUA_REGISTRYINDEX, ref);
 	}
 
 	public boolean isNil()
@@ -367,6 +369,28 @@ public class LuaObject
 		}
 	}
 
+	public <K, V> LuaTable<K, V> getTable()
+	{
+		synchronized (L)
+		{
+			push();
+			LuaTable<K, V> table = L.toTable(-1);
+			L.pop(1);
+			return table;
+		}
+	}
+
+	public <T> LuaFunction<T> getFunction()
+	{
+		synchronized (L)
+		{
+			push();
+			LuaFunction<T> func = L.toFunction(-1);
+			L.pop(1);
+			return func;
+		}
+	}
+
 	public Object getObject() throws LuaException
 	{
 		synchronized (L)
@@ -432,15 +456,15 @@ public class LuaObject
 				else
 					str = "";
 
-				if (err == LuaState.LUA_ERRRUN.intValue())
+				if (err == LuaState.LUA_ERRRUN)
 				{
 					str = "Runtime error. " + str;
 				}
-				else if (err == LuaState.LUA_ERRMEM.intValue())
+				else if (err == LuaState.LUA_ERRMEM)
 				{
 					str = "Memory allocation error. " + str;
 				}
-				else if (err == LuaState.LUA_ERRERR.intValue())
+				else if (err == LuaState.LUA_ERRERR)
 				{
 					str = "Error while running the error handler function. " + str;
 				}
@@ -452,7 +476,7 @@ public class LuaObject
 				throw new LuaException(str);
 			}
 
-			if (nres == LuaState.LUA_MULTRET.intValue())
+			if (nres == LuaState.LUA_MULTRET)
 				nres = L.getTop() - top;
 			if (L.getTop() - top < nres)
 			{

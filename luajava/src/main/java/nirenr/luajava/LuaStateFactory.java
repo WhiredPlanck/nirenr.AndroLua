@@ -25,7 +25,9 @@
 package nirenr.luajava;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class is responsible for instantiating new LuaStates.
@@ -39,9 +41,9 @@ import java.util.List;
 public final class LuaStateFactory
 {
 	/**
-	 * Array with all luaState's instances
+	 * Map with all luaState's instances
 	 */
-	private static final List states = new ArrayList();
+	private static final Map<Long, LuaState> states = new HashMap<>();
 	
 	/**
 	 * Non-public constructor. 
@@ -55,69 +57,44 @@ public final class LuaStateFactory
 	 */
 	public synchronized static LuaState newLuaState()
 	{
-		int i = getNextStateIndex();
-		LuaState L = new LuaState(i);
+		LuaState L = new LuaState();
 		
-		states.add(i, L);
+		states.put(L.getCPtrPeer(), L);
 		
 		return L;
 	}
 	
 	/**
 	 * Returns a existing instance of LuaState
-	 * @param index
+	 * @param peer a long value represents the pointer
 	 * @return LuaState
 	 */
-	public synchronized static LuaState getExistingState(int index)
+	public synchronized static LuaState getExistingState(long peer)
 	{
-		return (LuaState) states.get(index);
+		return (LuaState) states.get(peer);
 	}
 	
 	/**
-	 * Receives a existing LuaState and checks if it exists in the states list.
+	 * Receives a existing LuaState and checks if it exists in the states map.
 	 * If it doesn't exist adds it to the list.
-	 * @param L
+	 * @param L a lua state
 	 * @return int
 	 */
-	public synchronized static int insertLuaState(LuaState L)
+	public synchronized static long insertLuaState(LuaState L)
 	{
-		int i;
-		for (i = 0 ; i < states.size() ; i++)
-		{
-			LuaState state = (LuaState) states.get(i);
-			
-			if (state != null)
-			{
-				if (state.getCPtrPeer() == L.getCPtrPeer())
-					return i;
-			}
-		}
+		long peer = L.getCPtrPeer();
 
-		i = getNextStateIndex();
+		states.put(peer, L);
 		
-		states.set(i, L);
-		
-		return i;
+		return peer;
 	}
 	
 	/**
-	 * removes the luaState from the states list
-	 * @param idx
+	 * removes the luaState from the states map
+	 * @param peer a long value represents the lua state pointer
 	 */
-	public synchronized static void removeLuaState(int idx)
+	public synchronized static void removeLuaState(long peer)
 	{
-		states.add(idx, null);
-	}
-	
-	/**
-	 * Get next available index
-	 * @return int
-	 */
-	private synchronized static int getNextStateIndex()
-	{
-		int i;
-		for ( i=0 ; i < states.size() && states.get(i) != null ; i++ );
-		
-		return i;
+		states.put(peer, null);
 	}
 }

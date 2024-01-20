@@ -60,11 +60,11 @@ public final class LuaJavaAPI
 
       Object[] objs = new Object[top - 1];
 
-      Class clazz;
+      Class<?> clazz;
 
       if (obj instanceof Class)
       {
-        clazz = (Class) obj;
+        clazz = (Class<?>) obj;
       }
       else
       {
@@ -75,13 +75,13 @@ public final class LuaJavaAPI
       Method method = null;
 
       // gets method and arguments
-      for (int i = 0; i < methods.length; i++)
+      for (final Method value : methods)
       {
-        if (!methods[i].getName().equals(methodName))
+        if (!value.getName().equals(methodName))
 
           continue;
 
-        Class[] parameters = methods[i].getParameterTypes();
+        Class<?>[] parameters = value.getParameterTypes();
         if (parameters.length != top - 1)
           continue;
 
@@ -102,7 +102,7 @@ public final class LuaJavaAPI
 
         if (okMethod)
         {
-          method = methods[i];
+          method = value;
           break;
         }
 
@@ -160,7 +160,7 @@ public final class LuaJavaAPI
    * @return number of returned objects
    * @throws LuaException
    */
-  public static int classIndex(int luaState, Class clazz, String searchName)
+  public static int classIndex(int luaState, Class<?> clazz, String searchName)
       throws LuaException
   {
     synchronized (LuaStateFactory.getExistingState(luaState))
@@ -200,7 +200,7 @@ public final class LuaJavaAPI
 
     synchronized (L)
     {
-      Class clazz;
+      Class<?> clazz;
       try
       {
         clazz = Class.forName(className);
@@ -225,7 +225,7 @@ public final class LuaJavaAPI
    * @return number of returned objects
    * @throws LuaException
    */
-  public static int javaNew(int luaState, Class clazz) throws LuaException
+  public static int javaNew(int luaState, Class<?> clazz) throws LuaException
   {
     LuaState L = LuaStateFactory.getExistingState(luaState);
 
@@ -255,7 +255,7 @@ public final class LuaJavaAPI
     
     synchronized (L)
     {
-      Class clazz;
+      Class<?> clazz;
       try
       {
         clazz = Class.forName(className);
@@ -267,12 +267,12 @@ public final class LuaJavaAPI
 
       try
       {
-        Method mt = clazz.getMethod(methodName, new Class[] {LuaState.class});
-        Object obj = mt.invoke(null, new Object[] {L});
+        Method mt = clazz.getMethod(methodName, LuaState.class);
+        Object obj = mt.invoke(null, L);
         
-        if (obj != null && obj instanceof Integer)
+        if (obj instanceof Integer)
         {
-          return ((Integer) obj).intValue();
+          return (int) obj;
         }
         else
           return 0;
@@ -284,7 +284,7 @@ public final class LuaJavaAPI
     }
   }
 
-  private static Object getObjInstance(LuaState L, Class clazz)
+  private static Object getObjInstance(LuaState L, Class<?> clazz)
       throws LuaException
   {
     synchronized (L)
@@ -293,13 +293,13 @@ public final class LuaJavaAPI
 	
 	    Object[] objs = new Object[top - 1];
 	
-	    Constructor[] constructors = clazz.getConstructors();
-	    Constructor constructor = null;
+	    Constructor<?>[] constructors = clazz.getConstructors();
+	    Constructor<?> constructor = null;
 	
 	    // gets method and arguments
-	    for (int i = 0; i < constructors.length; i++)
+	    for (final Constructor<?> c : constructors)
 	    {
-	      Class[] parameters = constructors[i].getParameterTypes();
+	      Class<?>[] parameters = c.getParameterTypes();
 	      if (parameters.length != top - 1)
 	        continue;
 	
@@ -320,7 +320,7 @@ public final class LuaJavaAPI
 	
 	      if (okConstruc)
 	      {
-	        constructor = constructors[i];
+	        constructor = c;
 	        break;
 	      }
 	
@@ -367,11 +367,11 @@ public final class LuaJavaAPI
     synchronized (L)
     {
       Field field = null;
-      Class objClass;
+      Class<?> objClass;
 
       if (obj instanceof Class)
       {
-        objClass = (Class) obj;
+        objClass = (Class<?>) obj;
       }
       else
       {
@@ -427,11 +427,11 @@ public final class LuaJavaAPI
 
     synchronized (L)
     {
-      Class clazz;
+      Class<?> clazz;
 
       if (obj instanceof Class)
       {
-        clazz = (Class) obj;
+        clazz = (Class<?>) obj;
       }
       else
       {
@@ -440,9 +440,8 @@ public final class LuaJavaAPI
 
       Method[] methods = clazz.getMethods();
 
-      for (int i = 0; i < methods.length; i++)
-      {
-        if (methods[i].getName().equals(methodName))
+      for (Method method : methods) {
+        if (method.getName().equals(methodName))
           return 1;
       }
 
@@ -485,7 +484,7 @@ public final class LuaJavaAPI
     }
   }
 
-  private static Object compareTypes(LuaState L, Class parameter, int idx)
+  private static Object compareTypes(LuaState L, Class<?> parameter, int idx)
     throws LuaException
   {
     boolean okType = true;
@@ -506,7 +505,7 @@ public final class LuaJavaAPI
       }
       obj = new Boolean(L.toBoolean(idx));
     }
-    else if (L.type(idx) == LuaState.LUA_TSTRING.intValue())
+    else if (L.type(idx) == LuaState.LUA_TSTRING)
     {
       if (!parameter.isAssignableFrom(String.class))
       {
@@ -539,7 +538,7 @@ public final class LuaJavaAPI
         obj = L.getLuaObject(idx);
       }
     }
-    else if (L.type(idx) == LuaState.LUA_TNUMBER.intValue())
+    else if (L.type(idx) == LuaState.LUA_TNUMBER)
     {
       Double db = new Double(L.toNumber(idx));
       

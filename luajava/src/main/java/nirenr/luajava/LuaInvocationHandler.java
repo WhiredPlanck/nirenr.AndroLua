@@ -37,7 +37,7 @@ import java.lang.reflect.Method;
  */
 public class LuaInvocationHandler implements InvocationHandler
 {
-	private LuaObject obj;
+	private final LuaObject obj;
 
 	
 	public LuaInvocationHandler(LuaObject obj)
@@ -60,7 +60,7 @@ public class LuaInvocationHandler implements InvocationHandler
 	  		return null;
 	  	}
 	  	
-	  	Class retType = method.getReturnType();
+	  	Class<?> retType = method.getReturnType();
 	  	Object ret;
 
 	  	// Checks if returned type is void. if it is returns null.
@@ -72,7 +72,7 @@ public class LuaInvocationHandler implements InvocationHandler
 	  	else
 	  	{
 	  		ret = func.call(args, 1)[0];
-	  		if( ret != null && ret instanceof Double )
+	  		if(ret instanceof Double)
 	  		{
 	  		  ret = LuaState.convertLuaNumber((Double) ret, retType);
 	  		}

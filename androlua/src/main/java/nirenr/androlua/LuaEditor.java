@@ -1,15 +1,30 @@
 package nirenr.androlua;
 
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_ARGUMENT_EXTEND_SELECTION_BOOLEAN;
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_END_INT;
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_ARGUMENT_SELECTION_START_INT;
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE;
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_COPY;
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_CUT;
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_PASTE;
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY;
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_SET_SELECTION;
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_SET_TEXT;
+
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Typeface;
+import android.os.Build;
+import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.EditText;
 import android.widget.RadioGroup.LayoutParams;
 import android.widget.TextView;
@@ -25,6 +40,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LuaEditor extends FreeScrollingTextField {
 
@@ -490,7 +507,7 @@ public class LuaEditor extends FreeScrollingTextField {
         }
     }
 
-    public String getFilePath(){
+    public String getFilePath() {
         return _lastSelectedFile;
     }
 
@@ -501,8 +518,8 @@ public class LuaEditor extends FreeScrollingTextField {
         String line;
         while ((line = reader.readLine()) != null)
             buf.append(line).append("\n");
-        if(buf.length()>1)
-        buf.setLength(buf.length() - 1);
+        if (buf.length() > 1)
+            buf.setLength(buf.length() - 1);
         setText(buf);
         /*
         File inputFile = new File(filename);
@@ -517,7 +534,7 @@ public class LuaEditor extends FreeScrollingTextField {
     }
 
     public boolean save(String filename) throws IOException {
-        if(filename==null)
+        if (filename == null)
             return true;
         File outputFile = new File(filename);
 
@@ -533,18 +550,39 @@ public class LuaEditor extends FreeScrollingTextField {
         return true;
     }
 
+    public boolean findNext() {
+        return findNext(mKeyword);
+    }
+
     public boolean findNext(String keyword) {
         if (!keyword.equals(mKeyword)) {
             mKeyword = keyword;
             idx = 0;
         }
         // TODO: Implement this method
-        finder = new LinearSearchStrategy();
         String kw = mKeyword;
         if (kw.isEmpty()) {
             selectText(false);
             return false;
         }
+        try {
+            Pattern p = Pattern.compile(kw);
+            Matcher m = p.matcher(getText());
+            if (m.find(idx)) {
+                setSelection(m.start(), m.end());
+                idx = m.end();
+                moveCaret(idx);
+                return true;
+            }
+            selectText(false);
+            Toast.makeText(mContext, "未找到", Toast.LENGTH_SHORT).show();
+            idx = 0;
+            return false;
+        } catch (Exception e) {
+
+        }
+
+        finder = new LinearSearchStrategy();
         idx = finder.find(getText(), kw, idx, getText().length(), false, false);
         if (idx == -1) {
             selectText(false);
@@ -557,5 +595,121 @@ public class LuaEditor extends FreeScrollingTextField {
         moveCaret(idx);
         return true;
     }
+
+    public boolean findBack() {
+        return findBack(mKeyword);
+    }
+
+    public boolean findBack(String keyword) {
+        if (!keyword.equals(mKeyword)) {
+            mKeyword = keyword;
+            idx = 0;
+        }
+        // TODO: Implement this method
+        finder = new LinearSearchStrategy();
+        String kw = mKeyword;
+        if (kw.isEmpty()) {
+            selectText(false);
+            return false;
+        }
+
+        try {
+            Pattern p = Pattern.compile(kw);
+            Matcher m = p.matcher(getText());
+            int s=-1,e=-1;
+            while (m.find()) {
+                if(m.end()>=idx){
+                    if(s>-1) {
+                        setSelection(s, e);
+                        moveCaret(e);
+                        idx = s;
+                        return true;
+                    }
+                    break;
+                }
+                s=m.start();
+                e=m.end();
+            }
+            if(s>-1) {
+                setSelection(s, e);
+                moveCaret(e);
+                idx = s;
+                return true;
+            }
+            selectText(false);
+            Toast.makeText(mContext, "未找到", Toast.LENGTH_SHORT).show();
+            idx = getLength();;
+            return false;
+        } catch (Exception e) {
+
+        }
+
+
+        idx = finder.findBackwards(getText(), kw, idx - keyword.length() - 1, 0, false, false);
+        if (idx == -1) {
+            selectText(false);
+            Toast.makeText(mContext, "未找到", Toast.LENGTH_SHORT).show();
+            idx = getLength();
+            return false;
+        }
+        setSelection(idx, mKeyword.length());
+        idx += mKeyword.length();
+        moveCaret(idx);
+        return true;
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    public boolean performAccessibilityAction(int action, Bundle arguments) {
+
+        switch (action) {
+            case AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY:
+                switch (arguments.getInt(AccessibilityNodeInfo.ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT)) {
+                    case AccessibilityNodeInfo.MOVEMENT_GRANULARITY_LINE:
+                        moveCaretDown();
+                        break;
+                    case AccessibilityNodeInfo.MOVEMENT_GRANULARITY_CHARACTER:
+                        moveCaretRight();
+                        break;
+                }
+                return true;
+            case ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY:
+                switch (arguments.getInt(AccessibilityNodeInfo.ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT)) {
+                    case AccessibilityNodeInfo.MOVEMENT_GRANULARITY_LINE:
+                        moveCaretUp();
+                        break;
+                    case AccessibilityNodeInfo.MOVEMENT_GRANULARITY_CHARACTER:
+                        moveCaretLeft();
+                        break;
+                }
+                return true;
+            case ACTION_SET_SELECTION:
+                int start = arguments.getInt(ACTION_ARGUMENT_SELECTION_START_INT, 0);
+                int end = arguments.getInt(ACTION_ARGUMENT_SELECTION_END_INT, 0);
+                boolean sel = arguments.getBoolean(ACTION_ARGUMENT_EXTEND_SELECTION_BOOLEAN, false);
+                if (sel)
+                    setSelectionRange(start, end);
+                else
+                    setSelection(start, end);
+                return true;
+            case ACTION_SET_TEXT:
+                if(arguments==null)
+                    setText("",true);
+                else
+                    setText(arguments.getCharSequence(ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE),true);
+                return true;
+            case ACTION_PASTE:
+                paste();
+                return true;
+            case ACTION_COPY:
+                copy();
+                return true;
+            case ACTION_CUT:
+                cut();
+                return true;
+        }
+        return super.performAccessibilityAction(action, arguments);
+    }
+
 
 }

@@ -11,7 +11,7 @@ import nirenr.luajava.LuaException;
 import nirenr.luajava.LuaJavaAPI;
 import nirenr.luajava.LuaObject;
 import nirenr.luajava.LuaState;
-import nirenr.luajava.LuaTable;
+import nirenr.luajava.util.LuaTable;
 
 /**
  * Created by nirenr on 2018/08/05 0005.
@@ -41,7 +41,7 @@ public class LuaPreferenceFragment extends PreferenceFragment implements Prefere
 
     private void init(LuaTable<Integer,LuaTable> preferences){
         PreferenceScreen ps = getPreferenceScreen();
-        int len=preferences.length();
+        int len=preferences.size();
         LuaState L = preferences.getLuaState();
         for (int i = 1; i <= len; i++) {
             LuaTable p = preferences.get(i);

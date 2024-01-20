@@ -18,19 +18,19 @@ import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import nirenr.luajava.LuaException;
-import nirenr.luajava.LuaFunction;
-import nirenr.luajava.LuaJavaAPI;
-import nirenr.luajava.LuaObject;
-import nirenr.luajava.LuaState;
-import nirenr.luajava.LuaTable;
-
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import nirenr.luajava.LuaException;
+import nirenr.luajava.LuaJavaAPI;
+import nirenr.luajava.LuaObject;
+import nirenr.luajava.LuaState;
+import nirenr.luajava.util.LuaFunction;
+import nirenr.luajava.util.LuaTable;
 
 public class LuaAdapter extends BaseAdapter implements Filterable {
 
@@ -124,13 +124,11 @@ public class LuaAdapter extends BaseAdapter implements Filterable {
 
     @Override
     public int getCount() {
-        // TODO: Implement this method
-        return mData.length();
+        return mData.size();
     }
 
     @Override
     public Object getItem(int position) {
-        // TODO: Implement this method
         return mData.get(position + 1);
     }
 
@@ -150,9 +148,9 @@ public class LuaAdapter extends BaseAdapter implements Filterable {
     }
 
     public void addAll(LuaTable<Integer, LuaTable<String, Object>> items) throws Exception {
-        int len = items.length();
-        for (int i = 1; i <= len; i++)
-            insert.call(mBaseData, items.get(i));
+        for (final LuaTable<?, ?> item : items.getValues()) {
+            insert.call(mBaseData, item);
+        }
         if (mNotifyOnChange) notifyDataSetChanged();
     }
 

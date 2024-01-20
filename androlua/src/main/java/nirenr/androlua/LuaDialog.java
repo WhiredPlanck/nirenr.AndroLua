@@ -18,7 +18,7 @@ import java.util.Arrays;
  * Created by Administrator on 2017/02/04 0004.
  */
 
-public class LuaDialog extends AlertDialog implements  DialogInterface.OnClickListener{
+public class LuaDialog extends AlertDialog implements DialogInterface.OnClickListener {
     private Context mContext;
 
     private ListView mListView;
@@ -49,18 +49,23 @@ public class LuaDialog extends AlertDialog implements  DialogInterface.OnClickLi
     public void setButton1(CharSequence text) {
         setButton(DialogInterface.BUTTON_POSITIVE, text, this);
     }
+
     public void setButton2(CharSequence text) {
         setButton(DialogInterface.BUTTON_NEGATIVE, text, this);
     }
+
     public void setButton3(CharSequence text) {
         setButton(DialogInterface.BUTTON_NEUTRAL, text, this);
     }
+
     public void setPosButton(CharSequence text) {
         setButton(DialogInterface.BUTTON_POSITIVE, text, this);
     }
+
     public void setNegButton(CharSequence text) {
         setButton(DialogInterface.BUTTON_NEGATIVE, text, this);
     }
+
     public void setNeuButton(CharSequence text) {
         setButton(DialogInterface.BUTTON_NEUTRAL, text, this);
     }
@@ -74,7 +79,7 @@ public class LuaDialog extends AlertDialog implements  DialogInterface.OnClickLi
     }
 
     public void setOnClickListener(LuaDialog.OnClickListener listener) {
-        mOnClickListener=listener;
+        mOnClickListener = listener;
     }
 
     public void setPositiveButton(CharSequence text, DialogInterface.OnClickListener listener) {
@@ -141,29 +146,29 @@ public class LuaDialog extends AlertDialog implements  DialogInterface.OnClickLi
         mListView.setAdapter(adp);
     }
 
-    public void setSingleChoiceItems(CharSequence[] items){
+    public void setSingleChoiceItems(CharSequence[] items) {
         setSingleChoiceItems(items, 0);
     }
 
-    public void setSingleChoiceItems(CharSequence[] items, int checkedItem){
+    public void setSingleChoiceItems(CharSequence[] items, int checkedItem) {
         ArrayList<CharSequence> alist = new ArrayList<CharSequence>(Arrays.asList(items));
         ArrayAdapter<CharSequence> adp = new ArrayAdapter<>(mContext, android.R.layout.simple_list_item_single_choice, alist);
         setAdapter(adp);
         mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        mListView.setItemChecked(checkedItem,true);
+        mListView.setItemChecked(checkedItem, true);
     }
 
-    public void setMultiChoiceItems(CharSequence[] items){
+    public void setMultiChoiceItems(CharSequence[] items) {
         setMultiChoiceItems(items, new int[0]);
     }
 
-    public void setMultiChoiceItems(CharSequence[] items, int[] checkedItems){
+    public void setMultiChoiceItems(CharSequence[] items, int[] checkedItems) {
         ArrayList<CharSequence> alist = new ArrayList<CharSequence>(Arrays.asList(items));
-        ArrayAdapter<CharSequence> adp = new ArrayAdapter<>(mContext, android.R.layout.simple_list_item_multiple_choice, alist);
+        ArrayAdapter adp = new ArrayAdapter<CharSequence>(mContext, android.R.layout.simple_list_item_multiple_choice, alist);
         setAdapter(adp);
         mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-        for (int i:checkedItems)
-            mListView.setItemChecked(i,true);
+        for (int i : checkedItems)
+            mListView.setItemChecked(i, true);
     }
 
     public ListView getListView() {
@@ -212,12 +217,12 @@ public class LuaDialog extends AlertDialog implements  DialogInterface.OnClickLi
 
     @Override
     public void onClick(DialogInterface dialog, int which) {
-        if(mOnClickListener!=null)
-            mOnClickListener.onClick(this,getButton(which));
+        if (mOnClickListener != null)
+            mOnClickListener.onClick(this, getButton(which));
     }
 
-    public interface OnClickListener{
-        public void onClick(LuaDialog dlg,Button btn);
+    public interface OnClickListener {
+        public void onClick(LuaDialog dlg, Button btn);
     }
 
 /*

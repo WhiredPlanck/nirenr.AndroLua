@@ -1,11 +1,14 @@
 package nirenr.androlua;
 
-import android.graphics.drawable.*;
-import android.graphics.*;
+import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.Paint;
+import android.graphics.PixelFormat;
+import android.graphics.drawable.Drawable;
 
-import java.util.Arrays;
-
-import nirenr.luajava.*;
+import nirenr.luajava.LuaException;
+import nirenr.luajava.LuaObject;
+import nirenr.luajava.util.LuaFunction;
 
 public class LuaDrawable extends Drawable {
 

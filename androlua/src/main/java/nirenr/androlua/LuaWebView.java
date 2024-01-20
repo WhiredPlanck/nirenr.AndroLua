@@ -41,13 +41,13 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import nirenr.luajava.LuaException;
-import nirenr.luajava.LuaFunction;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+
+import nirenr.luajava.LuaException;
+import nirenr.luajava.util.LuaFunction;
 
 public class LuaWebView extends WebView implements LuaGcable {
 
@@ -67,7 +67,6 @@ public class LuaWebView extends WebView implements LuaGcable {
     @SuppressLint({"AddJavascriptInterface", "SetJavaScriptEnabled"})
     public LuaWebView(LuaActivity context) {
         super(context);
-        context.regGc(this);
         mContext = context;
         getSettings().setJavaScriptEnabled(true);
         getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
@@ -104,7 +103,7 @@ public class LuaWebView extends WebView implements LuaGcable {
                                      return true;
                                  } else {
                                      try{
-                                         mContext.startActivityForResult(new Intent(Intent.ACTION_VIEW, Uri.parse(url)), 0);
+                                         mContext.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
                                      }catch (Exception e){
                                          mContext.sendError("LuaWebView",e);
                                      }
@@ -155,7 +154,7 @@ public class LuaWebView extends WebView implements LuaGcable {
         );
 
         dm = context.getResources().getDisplayMetrics();
-        int top = (int) TypedValue.applyDimension(1, 2, dm);
+        int top = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2, dm);
 
         mProgressbar = new ProgressBar(context, null, android.R.attr.progressBarStyleHorizontal);
         mProgressbar.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, top, 0, 0));

@@ -5,7 +5,7 @@ import android.view.View;
 
 import nirenr.luajava.LuaException;
 import nirenr.luajava.LuaObject;
-import nirenr.luajava.LuaTable;
+import nirenr.luajava.util.LuaTable;
 
 /**
  * Created by Administrator on 2018/08/29 0029.

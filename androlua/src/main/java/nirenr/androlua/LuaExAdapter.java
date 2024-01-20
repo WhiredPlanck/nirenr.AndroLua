@@ -1,10 +1,11 @@
 package nirenr.androlua;
 
 import nirenr.luajava.LuaException;
+import nirenr.luajava.util.LuaTable;
 
 public class LuaExAdapter extends LuaExpandableListAdapter 
 {
-	public LuaExAdapter(LuaContext context,  LuaTable groupLayout, LuaTable childLayout) throws LuaException {
+	public LuaExAdapter(LuaContext context, LuaTable groupLayout, LuaTable childLayout) throws LuaException {
 		this(context,null,null,groupLayout,childLayout);
 	}
 	

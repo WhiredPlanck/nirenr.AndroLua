@@ -5,10 +5,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 
-import androidx.annotation.NonNull;
-
 /**
- * Created by nirenr on 2017/11/09 0009.
+ * Created by Administrator on 2017/11/09 0009.
  */
 
 public class LuaContentObserver extends ContentObserver implements LuaGcable{
@@ -20,7 +18,7 @@ public class LuaContentObserver extends ContentObserver implements LuaGcable{
         super(handler);
     }
 
-    public LuaContentObserver(@NonNull LuaContext context, String uri) {
+    public LuaContentObserver(LuaContext context,String uri) {
         this(new Handler(LuaApplication.getInstance().getMainLooper()));
         Uri mUri = Uri.parse(uri);
         context.regGc(this);
@@ -32,7 +30,7 @@ public class LuaContentObserver extends ContentObserver implements LuaGcable{
     }
 
 
-    public LuaContentObserver(@NonNull LuaContext context, Uri mUri) {
+    public LuaContentObserver(LuaContext context, Uri mUri) {
         this(new Handler(LuaApplication.getInstance().getMainLooper()));
 
         context.regGc(this);

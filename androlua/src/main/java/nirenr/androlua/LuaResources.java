@@ -20,6 +20,7 @@ import android.util.TypedValue;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -27,15 +28,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 
-import nirenr.luajava.LuaException;
-import nirenr.luajava.LuaMetaTable;
-
 /**
  * Created by Administrator on 2017/04/24 0024.
  */
 
 @SuppressLint("UseSparseArrays")
-public class LuaResources extends Resources implements LuaMetaTable {
+public class LuaResources extends Resources {
     private static int mId = 0x7f050000;
     private final HashMap<Integer, String> mTextMap = new HashMap<>();
     private final HashMap<Integer, Drawable> mDrawableMap = new HashMap<>();
@@ -140,11 +138,6 @@ public class LuaResources extends Resources implements LuaMetaTable {
         return mSuperResources.getColor(id);
     }
 
-    @Override
-    public Object __call(Object... arg) throws LuaException {
-        return null;
-    }
-
     public int put(String key, Object value) {
         if (value == null)
             throw new NullPointerException();
@@ -168,16 +161,6 @@ public class LuaResources extends Resources implements LuaMetaTable {
 
     public Object get(String key) {
         return mIdMap.get(key);
-    }
-
-    @Override
-    public Object __index(String key) {
-        return get(key);
-    }
-
-    @Override
-    public void __newIndex(String key, Object value) {
-        put(key, value);
     }
 
     public void setSuperResources(Resources superRes) {
@@ -365,6 +348,7 @@ public class LuaResources extends Resources implements LuaMetaTable {
         return mSuperResources.getQuantityText(id, quantity);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public Drawable getDrawableForDensity(int id, int density, @Nullable Theme theme) {
         return mSuperResources.getDrawableForDensity(id, density, theme);

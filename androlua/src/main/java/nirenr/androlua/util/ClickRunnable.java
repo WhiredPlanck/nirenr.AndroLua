@@ -4,7 +4,7 @@ import android.util.Log;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import nirenr.androlua.LuaAccessibilityService;
-import nirenr.luajava.LuaTable;
+import nirenr.luajava.util.LuaTable;
 
 /**
  * Created by Administrator on 2017/08/31 0031.
@@ -37,9 +37,9 @@ public class ClickRunnable implements Runnable {
     }
 
     public boolean canClick() {
-        if (mButtons.length() == 0)
+        if (mButtons.size() == 0)
             return false;
-        int size = mButtons.length();
+        int size = mButtons.size();
         for (int i = 0; i < size; i++) {
             if (mIsCancel) {
                 if (mClickCallback != null)
@@ -49,7 +49,7 @@ public class ClickRunnable implements Runnable {
             Object obj = mButtons.get(i + 1);
             if (obj instanceof LuaTable) {
                 LuaTable bs = (LuaTable) obj;
-                if (bs.length() == 0)
+                if (bs.size() == 0)
                     continue;
                 String name = (String) bs.get(1);
                 if (name == null)
@@ -140,12 +140,12 @@ public class ClickRunnable implements Runnable {
         Object obj = mButtons.get(mIdx);
         if (obj == null) {
             if (mClickCallback != null)
-                mClickCallback.onDone(mIdx == mButtons.length(), mButtons, null, mIdx);
+                mClickCallback.onDone(mIdx == mButtons.size(), mButtons, null, mIdx);
             return;
         }
         if (obj instanceof LuaTable) {
             LuaTable bs = (LuaTable) obj;
-            if (bs.length() == 0)
+            if (bs.size() == 0)
                 return;
             mClick = new ClickRunnable(mService, bs);
             mClick.canClick(new ClickCallback() {

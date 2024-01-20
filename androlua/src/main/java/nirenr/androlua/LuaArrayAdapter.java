@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
@@ -20,7 +21,6 @@ import nirenr.luajava.LuaObject;
 import nirenr.luajava.LuaState;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class LuaArrayAdapter extends ArrayAdapter {
@@ -51,7 +51,7 @@ public class LuaArrayAdapter extends ArrayAdapter {
         L = context.getLuaState();
         loadlayout = L.getLuaObject("loadlayout");
         L.newTable();
-        loadlayout.call(Arrays.asList(mResource, L.getLuaObject(-1), AbsListView.class).toArray());
+        loadlayout.call(mResource, L.getLuaObject(-1), AbsListView.class);
         L.pop(1);
     }
 
@@ -72,7 +72,7 @@ public class LuaArrayAdapter extends ArrayAdapter {
             holder = L.getLuaObject(-1);
             L.pop(1);
             try {
-                view = (View) loadlayout.call(Arrays.asList(mResource, holder, AbsListView.class).toArray());
+                view = (View) loadlayout.call(mResource, holder, AbsListView.class);
             } catch (LuaException e) {
                 return new View(mContext.getContext());
             }
@@ -131,7 +131,7 @@ public class LuaArrayAdapter extends ArrayAdapter {
         }
     }
 
-    private Handler mHandler = new Handler() {
+    private final Handler mHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             notifyDataSetChanged();

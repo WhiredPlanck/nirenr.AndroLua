@@ -502,7 +502,7 @@ public class LuaObject
 	 * @return Object - Returned Object
 	 * @throws LuaException
 	 */
-	public Object call(Object[] args) throws LuaException
+	public Object call(Object... args) throws LuaException
 	{
 		return call(args, 1)[0];
 	}

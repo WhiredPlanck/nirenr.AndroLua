@@ -1,12 +1,5 @@
 package nirenr.androlua;
 
-import android.util.Log;
-
-import nirenr.androlua.util.AsyncTaskX;
-import nirenr.luajava.LuaException;
-import nirenr.luajava.LuaObject;
-import nirenr.luajava.LuaString;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -21,11 +14,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import nirenr.androlua.util.AsyncTaskX;
+import nirenr.luajava.LuaException;
+import nirenr.luajava.LuaObject;
 
 public class Http {
 
@@ -214,7 +210,7 @@ public class Http {
     }
 
 
-    private final static String boundary = "----qwertyuiopasdfghjklzxcvbnm";
+    private final static String boundary = "----q1w2e3r4t5y6u7i8o9p0a1s2d3f4g5h6j7k8l9z0x1c2v3b4n5m6";
 
     public static HttpTask post(String url, HashMap<String, String> data, HashMap<String, String> file, LuaObject callback) {
         return post(url, data, file, null, null, null, callback);
@@ -266,6 +262,12 @@ public class Http {
                 e.printStackTrace();
             }
         }
+        try {
+            buff.write(String.format("--%s--\r\n", boundary).getBytes(charset));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         return buff.toByteArray();
     }
 
@@ -353,8 +355,6 @@ public class Http {
                     mCharset = "UTF-8";
                 conn.setRequestProperty("Accept-Charset", mCharset);
 
-                if (mCookie != null)
-                    conn.setRequestProperty("Cookie", mCookie);
 
                 if (sHeader != null) {
                     Set<Map.Entry<String, String>> entries = sHeader.entrySet();
@@ -369,6 +369,9 @@ public class Http {
                         conn.setRequestProperty(entry.getKey(), entry.getValue());
                     }
                 }
+
+                if (mCookie != null)
+                    conn.setRequestProperty("Cookie", mCookie);
 
                 if (mMethod != null)
                     conn.setRequestMethod(mMethod);
@@ -422,6 +425,7 @@ public class Http {
                                 if (idx2 == -1)
                                     idx2 = s.length();
                                 mCharset = s.substring(idx + 1, idx2);
+                                mOutCharset=mCharset;
                                 break;
                             }
                         }
@@ -443,9 +447,11 @@ public class Http {
                 try {
                     InputStream is = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(is, mCharset));
-                    String line;
+                    String line = reader.readLine();
+                    if (line != null)
+                        buf.append(line);
                     while ((line = reader.readLine()) != null && !isCancelled())
-                        buf.append(line).append('\n');
+                        buf.append('\n').append(line);
                     is.close();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -453,9 +459,11 @@ public class Http {
                 InputStream is = conn.getErrorStream();
                 if (is != null) {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(is, mCharset));
-                    String line;
+                    String line = reader.readLine();
+                    if (line != null)
+                        buf.append(line);
                     while ((line = reader.readLine()) != null && !isCancelled())
-                        buf.append(line).append('\n');
+                        buf.append('\n').append(line);
                     is.close();
                 }
                 return new Object[]{code, new String(buf), cok.toString(), hs};
@@ -509,10 +517,10 @@ public class Http {
                 mCallback.call((Object[]) result);
             } catch (LuaException e) {
                 try {
-                    mCallback.getLuaState().getLuaObject("print").call(Collections.singletonList(e.getMessage()).toArray());
+                    mCallback.getLuaState().getLuaObject("print").call(e.getMessage());
                 } catch (LuaException e2) {
                 }
-                Log.i("lua", e.getMessage());
+                android.util.Log.i("lua", e.getMessage());
             }
         }
 

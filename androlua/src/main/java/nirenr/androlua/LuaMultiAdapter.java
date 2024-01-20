@@ -15,19 +15,19 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import nirenr.luajava.LuaException;
-import nirenr.luajava.LuaFunction;
-import nirenr.luajava.LuaJavaAPI;
-import nirenr.luajava.LuaObject;
-import nirenr.luajava.LuaState;
-import nirenr.luajava.LuaTable;
-
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import nirenr.luajava.LuaException;
+import nirenr.luajava.LuaJavaAPI;
+import nirenr.luajava.LuaObject;
+import nirenr.luajava.LuaState;
+import nirenr.luajava.util.LuaFunction;
+import nirenr.luajava.util.LuaTable;
 
 /**
  * Created by Administrator on 2017/02/27 0027.
@@ -76,29 +76,23 @@ public class LuaMultiAdapter extends BaseAdapter {
         loadLayout = (LuaFunction<View>) L.getLuaObject("loadlayout").getFunction();
         insert = L.getLuaObject("table").getField("insert").getFunction();
         remove = L.getLuaObject("table").getField("remove").getFunction();
-        int len = mLayout.length();
-        for (int i = 1; i <= len; i++) {
+        for (final LuaTable<?, ?> item : mLayout.getValues()) {
             L.newTable();
-            loadLayout.call(mLayout.get(i), L.getLuaObject(-1), AbsListView.class);
+            loadLayout.call(item, L.getLuaObject(-1), AbsListView.class);
             L.pop(1);
         }
     }
 
     @Override
     public int getViewTypeCount() {
-        return mLayout.length();
+        return mLayout.size();
     }
 
     @Override
     public int getItemViewType(int position) {
-        try{
-            int t = mData.get(position + 1).get("__type",Integer.class) - 1;
-            return t < 0 ? 0 : t;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        }
-     }
+        int t = ((Long) mData.get(position + 1).get("__type")).intValue() - 1;
+        return t < 0 ? 0 : t;
+    }
 
 
     public void setAnimation(LuaTable<Integer, LuaFunction<Animation>> animation) {
@@ -112,13 +106,11 @@ public class LuaMultiAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        // TODO: Implement this method
-        return mData.length();
+        return mData.size();
     }
 
     @Override
     public Object getItem(int position) {
-        // TODO: Implement this method
         return mData.get(position + 1);
     }
 
@@ -138,9 +130,8 @@ public class LuaMultiAdapter extends BaseAdapter {
     }
 
     public void addAll(LuaTable<Integer, LuaTable<String, Object>> items) throws Exception {
-        int len = items.length();
-        for (int i = 1; i <= len; i++)
-            insert.call(mData, items.get(i));
+        for (final Object item : items.getValues())
+            insert.call(mData, item);
         if (mNotifyOnChange) notifyDataSetChanged();
     }
 
@@ -195,10 +186,10 @@ public class LuaMultiAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         // TODO: Implement this method
-        View view = null;
-        LuaObject holder = null;
-        int t = mData.get(position + 1).get("__type", Integer.class);
-        t = t < 1 ? 1 : t;
+        View view;
+        LuaObject holder;
+        int t = ((Long) mData.get(position + 1).get("__type")).intValue();
+        t = Math.max(t, 1);
         if (convertView == null) {
             try {
                 LuaTable layout = mLayout.get(t);
@@ -415,7 +406,6 @@ public class LuaMultiAdapter extends BaseAdapter {
 
         @Override
         public void run() {
-            // TODO: Implement this method
             try {
                 LuaBitmap.getBitmap(mContext, mPath);
                 mHandler.sendEmptyMessage(0);

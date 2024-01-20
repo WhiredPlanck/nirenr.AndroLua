@@ -5,17 +5,16 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
+import java.io.IOException;
+import java.util.regex.Pattern;
+
 import nirenr.luajava.JavaFunction;
 import nirenr.luajava.LuaException;
-import nirenr.luajava.LuaMetaTable;
 import nirenr.luajava.LuaObject;
 import nirenr.luajava.LuaState;
 import nirenr.luajava.LuaStateFactory;
 
-import java.io.IOException;
-import java.util.regex.Pattern;
-
-public class LuaThread extends Thread implements Runnable,LuaMetaTable,LuaGcable {
+public class LuaThread extends Thread implements Runnable, LuaGcable {
 
 	private boolean mGc;
 
@@ -29,43 +28,6 @@ public class LuaThread extends Thread implements Runnable,LuaMetaTable,LuaGcable
 	@Override
 	public boolean isGc() {
 		return mGc;
-	}
-
-
-	@Override
-	public Object __call(Object[] arg) {
-		// TODO: Implement this method
-		return null;
-	}
-
-	@Override
-	public Object __index(final String key) {
-		// TODO: Implement this method
-		return new LuaMetaTable(){
-			@Override
-			public Object __call(Object[] arg) {
-				// TODO: Implement this method
-				call(key, arg);
-				return null;
-			}
-
-			@Override
-			public Object __index(String key) {
-				// TODO: Implement this method
-				return null;
-			}
-
-			@Override
-			public void __newIndex(String key, Object value) {
-				// TODO: Implement this method
-			}
-		};
-	}
-
-	@Override
-	public void __newIndex(String key, Object value) {
-		// TODO: Implement this method
-		set(key, value);
 	}
 
 	private LuaState L;

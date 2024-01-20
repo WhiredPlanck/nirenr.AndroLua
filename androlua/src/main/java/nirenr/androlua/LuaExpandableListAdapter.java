@@ -6,6 +6,7 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
@@ -26,6 +27,8 @@ import java.util.Set;
 import nirenr.luajava.LuaException;
 import nirenr.luajava.LuaJavaAPI;
 import nirenr.luajava.LuaState;
+import nirenr.luajava.util.LuaFunction;
+import nirenr.luajava.util.LuaTable;
 
 public class LuaExpandableListAdapter extends BaseExpandableListAdapter {
 
@@ -34,8 +37,8 @@ public class LuaExpandableListAdapter extends BaseExpandableListAdapter {
 	private LuaState L;
 	private LuaContext mContext;
 	
-	private LuaTable<Integer,LuaTable<String,Object>> mGroupData;
-	private LuaTable<Integer,LuaTable<Integer,LuaTable<String,Object>>> mChildData;
+	private LuaTable<Integer, LuaTable<String,Object>> mGroupData;
+	private LuaTable<Integer,LuaTable<Integer, LuaTable<String,Object>>> mChildData;
 
 	private HashMap<View,Animation> mAnimCache = new HashMap<View,Animation>();
 	
@@ -53,7 +56,7 @@ public class LuaExpandableListAdapter extends BaseExpandableListAdapter {
 	private LuaFunction<Animation> mAnimationUtil;
 
 	private boolean mNotifyOnChange;
-	private Handler mHandler=new Handler(){
+	private final Handler mHandler = new Handler(Looper.getMainLooper()){
 		@Override
 		public void handleMessage(Message msg) {
 			notifyDataSetChanged();
@@ -103,8 +106,7 @@ public class LuaExpandableListAdapter extends BaseExpandableListAdapter {
 
 	@Override
 	public int getGroupCount() {
-		// TODO: Implement this method
-		return mGroupData.length();
+		return mGroupData.size();
 	}
 
 	@Override
@@ -157,16 +159,16 @@ public class LuaExpandableListAdapter extends BaseExpandableListAdapter {
 	}
 	
 	public GroupItem add(LuaTable<String,Object> groupItem) throws Exception {
-		mGroupData.put(mGroupData.length() + 1, groupItem);
-		LuaTable<Integer, LuaTable<String, Object>> childItem=new LuaTable<Integer,LuaTable<String,Object>>(L);
-		mChildData.put(mGroupData.length(),childItem);
+		mGroupData.put(mGroupData.size() + 1, groupItem);
+		LuaTable<Integer, LuaTable<String, Object>> childItem= new LuaTable<>(L);
+		mChildData.put(mGroupData.size(), childItem);
 		if (mNotifyOnChange) notifyDataSetChanged();
 		return new GroupItem(childItem);
 	}
 
 	public GroupItem add(LuaTable<String,Object> groupItem, LuaTable<Integer, LuaTable<String, Object>> childItem) throws Exception {
-		mGroupData.put(mGroupData.length() + 1, groupItem);
-		mChildData.put(mGroupData.length(),childItem);
+		mGroupData.put(mGroupData.size() + 1, groupItem);
+		mChildData.put(mGroupData.size(), childItem);
 		if (mNotifyOnChange) notifyDataSetChanged();
 		return new GroupItem(childItem);
 	}
@@ -478,7 +480,7 @@ public class LuaExpandableListAdapter extends BaseExpandableListAdapter {
 		}
 
 		public void add(LuaTable<String,Object> item) throws Exception {
-			mData.put(mData.length() + 1, item);
+			mData.put(mData.size() + 1, item);
 			if (mNotifyOnChange) notifyDataSetChanged();
 		}
 

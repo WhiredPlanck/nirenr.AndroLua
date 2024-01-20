@@ -30,6 +30,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.StrictMode;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -42,7 +43,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
-import android.widget.ArrayListAdapter;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ScrollView;
@@ -76,9 +77,9 @@ import nirenr.luajava.LuaStateFactory;
 
 public class LuaActivity extends Activity implements LuaBroadcastReceiver.OnReceiveListener, LuaContext {
 
-    private final static String ARG = "arg";
-    private final static String DATA = "data";
-    private final static String NAME = "name";
+    public final static String ARG = "arg";
+    public final static String DATA = "data";
+    public final static String NAME = "name";
     private static ArrayList<String> prjCache = new ArrayList<String>();
     private String luaDir;
     private Handler handler;
@@ -88,7 +89,7 @@ public class LuaActivity extends Activity implements LuaBroadcastReceiver.OnRece
     private int mWidth;
     private int mHeight;
     private ListView list;
-    private ArrayListAdapter<String> adapter;
+    private ArrayAdapter<String> adapter;
     private LuaState L;
     private String luaPath;
     private StringBuilder toastbuilder = new StringBuilder();
@@ -152,7 +153,7 @@ public class LuaActivity extends Activity implements LuaBroadcastReceiver.OnRece
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        setTheme(android.R.style.Theme_Holo_Light_NoActionBar);
+        //setTheme(android.R.style.Theme_Holo_Light_NoActionBar);
 
 
         //设置主题
@@ -182,7 +183,7 @@ public class LuaActivity extends Activity implements LuaBroadcastReceiver.OnRece
         status.setTextIsSelectable(true);
         list = new ListView(this);
         list.setFastScrollEnabled(true);
-        adapter = new ArrayListAdapter<String>(this, android.R.layout.simple_list_item_1) {
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 TextView view = (TextView) super.getView(position, convertView, parent);
@@ -224,6 +225,8 @@ public class LuaActivity extends Activity implements LuaBroadcastReceiver.OnRece
                 arg = new Object[0];
 
             luaPath = getLuaPath();
+            /*if(TextUtils.isEmpty(luaPath))
+                return;*/
             pageName = new File(luaPath).getName();
             int idx = pageName.lastIndexOf(".");
             if (idx > 0)
@@ -236,7 +239,8 @@ public class LuaActivity extends Activity implements LuaBroadcastReceiver.OnRece
             mLuaDexLoader.loadLibs();
             //MultiDex.installLibs(this);
             sLuaActivityMap.put(pageName, this);
-            doFile(luaPath, arg);
+            if(!TextUtils.isEmpty(luaPath)&&new File(luaPath).exists())
+                doFile(luaPath, arg);
             isCreate = true;
             if (!pageName.equals("main"))
                 runFunc("main", arg);
@@ -467,7 +471,7 @@ public class LuaActivity extends Activity implements LuaBroadcastReceiver.OnRece
         Uri uri = intent.getData();
         String path = null;
         if (uri == null)
-            return null;
+            return "";
 
         path = uri.getPath();
         if (!new File(path).exists() && new File(getLuaPath(path)).exists())
@@ -1172,7 +1176,9 @@ public class LuaActivity extends Activity implements LuaBroadcastReceiver.OnRece
     }
 
     public void newActivity(int req, String path, Object[] arg, boolean newDocument) throws FileNotFoundException {
-        final Intent intent = new Intent(this, LuaActivity.class);
+        Intent intent = new Intent(this, LuaActivity.class);
+        if (newDocument)
+            intent = new Intent(this, LuaActivity.class);
 
         intent.putExtra(NAME, path);
         if (path.charAt(0) != '/')
@@ -1232,7 +1238,9 @@ public class LuaActivity extends Activity implements LuaBroadcastReceiver.OnRece
     }
 
     public void newActivity(int req, String path, int in, int out, Object[] arg, boolean newDocument) throws FileNotFoundException {
-        final Intent intent = new Intent(this, LuaActivity.class);
+        Intent intent = new Intent(this, LuaActivity.class);
+        if (newDocument)
+            intent = new Intent(this, LuaActivityX.class);
         intent.putExtra(NAME, path);
         if (path.charAt(0) != '/')
             path = luaDir + "/" + path;
@@ -1509,6 +1517,14 @@ public class LuaActivity extends Activity implements LuaBroadcastReceiver.OnRece
                 L.setUpValue(-2, 1);
                 ok = L.pcall(0, 0, 0);
                 if (ok == 0) {
+                    if (sKey == null) {
+                        LuaObject key = env.getField("app_key");
+                        if (key.isString()) {
+                            sKey = key.toString();
+                        }
+                     }
+
+
                     LuaObject title = env.getField("appname");
                     if (title.isString())
                         setTitle(title.getString());

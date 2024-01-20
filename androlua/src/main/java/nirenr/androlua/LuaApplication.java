@@ -8,10 +8,11 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.widget.Toast;
 
 import nirenr.luajava.LuaState;
-import nirenr.luajava.LuaTable;
+import nirenr.luajava.util.LuaTable;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -159,7 +160,7 @@ public class LuaApplication extends Application implements LuaContext {
         crashHandler.init(getApplicationContext());
         mSharedPreferences = getSharedPreferences(this);
         //初始化AndroLua工作目录
-        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+        /*if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             String sdDir = Environment.getExternalStorageDirectory().getAbsolutePath();
             luaExtDir = sdDir + "/AndroLua";
         } else {
@@ -173,25 +174,23 @@ public class LuaApplication extends Application implements LuaContext {
             }
             if (luaExtDir == null)
                 luaExtDir = getDir("AndroLua", Context.MODE_PRIVATE).getAbsolutePath();
-        }
+        }*/
+        //luaExtDir = mSharedPreferences.getString("user_data_dir", getString(R.string.default_user_data_dir));
 
-        File destDir = new File(luaExtDir);
-        if (!destDir.exists())
-            destDir.mkdirs();
 
         //定义文件夹
-        localDir = getFilesDir().getAbsolutePath();
+        localDir = mSharedPreferences.getString("shared_data_dir", getString(R.string.default_shared_data_dir));
         odexDir = getDir("odex", Context.MODE_PRIVATE).getAbsolutePath();
         libDir = getDir("lib", Context.MODE_PRIVATE).getAbsolutePath();
         luaMdDir = getDir("lua", Context.MODE_PRIVATE).getAbsolutePath();
         luaCpath = getApplicationInfo().nativeLibraryDir + "/lib?.so" + ";" + libDir + "/lib?.so";
         //luaDir = extDir;
-        luaLpath = luaMdDir + "/?.lua;" + luaMdDir + "/lua/?.lua;" + luaMdDir + "/?/init.lua;";
+        luaLpath = localDir + "/?.lua;" + localDir + "/lua/?.lua;" + localDir + "/?/init.lua;" + luaMdDir + "/?.lua;" + luaMdDir + "/lua/?.lua;" + luaMdDir + "/?/init.lua;";
         //checkInfo();
     }
 
     private static SharedPreferences getSharedPreferences(Context context) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+        /*if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
             Context deContext = context.createDeviceProtectedStorageContext();
             if (deContext != null)
                 return PreferenceManager.getDefaultSharedPreferences(deContext);
@@ -199,7 +198,8 @@ public class LuaApplication extends Application implements LuaContext {
                 return PreferenceManager.getDefaultSharedPreferences(context);
         } else {
             return PreferenceManager.getDefaultSharedPreferences(context);
-        }
+        }*/
+        return PreferenceManager.getDefaultSharedPreferences(context);
     }
 
     @Override
@@ -282,7 +282,21 @@ public class LuaApplication extends Application implements LuaContext {
     @Override
     public String getLuaExtDir() {
         // TODO: Implement this method
-        return luaExtDir;
+        if (luaExtDir != null)
+            return luaExtDir;
+        try{
+            luaExtDir = mSharedPreferences.getString("user_data_dir", getString(R.string.default_user_data_dir));
+            File destDir = new File(luaExtDir);
+            if (!destDir.exists())
+                destDir.mkdirs();
+        }catch (Exception e){
+            e.printStackTrace();
+            luaExtDir=Config.getUserDataDir(this);
+            File destDir = new File(luaExtDir);
+            if (!destDir.exists())
+                destDir.mkdirs();
+        }
+         return luaExtDir;
     }
 
     @Override
@@ -290,7 +304,7 @@ public class LuaApplication extends Application implements LuaContext {
         // TODO: Implement this method
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             String sdDir = Environment.getExternalStorageDirectory().getAbsolutePath();
-            luaExtDir = new File(sdDir , dir).getAbsolutePath();
+            luaExtDir = new File(sdDir, dir).getAbsolutePath();
         } else {
             File[] fs = new File("/storage").listFiles();
             for (File f : fs) {
@@ -298,7 +312,7 @@ public class LuaApplication extends Application implements LuaContext {
                 if (ls == null)
                     continue;
                 if (ls.length > 5)
-                    luaExtDir = new File(f, dir).getAbsolutePath() ;
+                    luaExtDir = new File(f, dir).getAbsolutePath();
             }
             if (luaExtDir == null)
                 luaExtDir = getDir(dir, Context.MODE_PRIVATE).getAbsolutePath();
@@ -348,7 +362,10 @@ public class LuaApplication extends Application implements LuaContext {
     }
 
 
-} 
+    public String getLuaMdDir() {
+        return luaMdDir;
+    }
+}
 
 
 

@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import nirenr.luajava.LuaObject;
+import nirenr.luajava.util.LuaTable;
 
 public class LuaFragment extends Fragment {
 

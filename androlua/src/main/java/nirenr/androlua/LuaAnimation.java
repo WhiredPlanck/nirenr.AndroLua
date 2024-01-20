@@ -4,7 +4,7 @@ import android.view.animation.Animation;
 import android.view.animation.Transformation;
 
 import nirenr.luajava.LuaException;
-import nirenr.luajava.LuaFunction;
+import nirenr.luajava.util.LuaFunction;
 
 /**
  * Created by Administrator on 2016/12/08 0008.
@@ -28,7 +28,7 @@ public class LuaAnimation extends Animation {
             mAnimation.call(interpolatedTime, t);
             if (mApplyTransformation == null) {
                 Object r = mAnimation.call(interpolatedTime, t, this);
-                if (r != null && r instanceof LuaFunction)
+                if (r instanceof LuaFunction)
                     mApplyTransformation = (LuaFunction) r;
             }
             if (mApplyTransformation != null) {

@@ -44,7 +44,6 @@ public class GlobalActionAutomator {
         return performGlobalAction(AccessibilityService.GLOBAL_ACTION_POWER_DIALOG);
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private boolean performGlobalAction(int globalAction) {
         if (mService == null)
             return false;

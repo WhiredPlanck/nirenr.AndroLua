@@ -1,5 +1,12 @@
 package nirenr.androlua;
 
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS;
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK;
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_FOCUS;
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_LONG_CLICK;
+import static android.view.accessibility.AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD;
+
 import android.accessibilityservice.AccessibilityService;
 import android.annotation.SuppressLint;
 import android.content.ClipData;
@@ -26,14 +33,9 @@ import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
-import nirenr.androlua.util.ClickRunnable;
-import nirenr.androlua.util.GlobalActionAutomator;
+import com.nirenr.Point;
 import com.nirenr.screencapture.ScreenCaptureListener;
 import com.nirenr.screencapture.ScreenShot;
-import nirenr.luajava.LuaException;
-import nirenr.luajava.LuaFunction;
-import nirenr.luajava.LuaTable;
-import com.nirenr.Point;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,12 +43,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
-import static android.view.accessibility.AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS;
-import static android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK;
-import static android.view.accessibility.AccessibilityNodeInfo.ACTION_FOCUS;
-import static android.view.accessibility.AccessibilityNodeInfo.ACTION_LONG_CLICK;
-import static android.view.accessibility.AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD;
+import nirenr.androlua.util.ClickRunnable;
+import nirenr.androlua.util.GlobalActionAutomator;
+import nirenr.luajava.LuaException;
+import nirenr.luajava.util.LuaFunction;
+import nirenr.luajava.util.LuaTable;
 
 @SuppressLint("NewApi")
 public class LuaAccessibilityService extends AccessibilityService {

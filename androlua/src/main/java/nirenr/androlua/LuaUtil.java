@@ -1,22 +1,30 @@
 package nirenr.androlua;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
-import android.util.Base64;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Environment;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -35,7 +43,6 @@ import java.util.zip.Adler32;
 import java.util.zip.CheckedOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import dalvik.system.DexFile;
@@ -404,8 +411,8 @@ public class LuaUtil {
         }
         if (zipFile.exists()) {
             try {
-                zipFile.createNewFile();
-            } catch (IOException e) {
+                zipFile.delete();
+            } catch (Exception e) {
                 return result;
             }
         }
@@ -482,121 +489,6 @@ public class LuaUtil {
             }
         }
     }
-
-    public static boolean unZipBase64(String source, String extDir) {
-        ByteArrayInputStream zbuf = new ByteArrayInputStream(Base64.decode(source, Base64.NO_WRAP));
-        ZipInputStream zin = new ZipInputStream(new BufferedInputStream(zbuf));
-        ZipEntry entry;
-        try {
-            while ((entry = zin.getNextEntry()) != null) {
-                String name = entry.getName();
-                if (entry.isDirectory()) {
-                    File f = new File(extDir + File.separator + name);
-                    if (!f.exists())
-                        f.mkdirs();
-                } else {
-                    String fname = extDir + File.separator + name;
-                    File temp = new File(fname).getParentFile();
-                    if (!temp.exists()) {
-                        if (!temp.mkdirs()) {
-                            throw new RuntimeException("create file " + fname + temp.getName() + " fail");
-                        }
-                    }
-                    FileOutputStream out = new FileOutputStream(extDir + File.separator + name);
-                    byte[] buf = new byte[8 * 1000];
-                    int count = 0;
-                    while ((count = zin.read(buf)) != -1) {
-                        out.write(buf, 0, count);
-                    }
-                    out.close();
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public static String zipToBase64(String sourceFilePath) {
-        String[] fs = new File(sourceFilePath).list();
-        ByteArrayOutputStream dest = new ByteArrayOutputStream();
-        ZipOutputStream out = null;
-        try {
-            //CheckedOutputStream checksum = new CheckedOutputStream(dest, new Adler32());
-            out = new ZipOutputStream(new BufferedOutputStream(dest));
-            out.setLevel(9);
-            for (String s : fs) {
-                compress(new File(sourceFilePath,s), out, "");
-            }
-            //checksum.getChecksum().getValue();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (out != null) {
-                try {
-                    out.closeEntry();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return Base64.encodeToString(dest.toByteArray(), Base64.NO_WRAP);
-    }
-
-    public static boolean zip(String[] sourceFilePath, String zipFilePath, String zipFileName) {
-        boolean result = false;
-        //File source=new File(sourceFilePath);
-        File zipFile = new File(zipFilePath, zipFileName);
-        if (!zipFile.getParentFile().exists()) {
-            if (!zipFile.getParentFile().mkdirs()) {
-                return result;
-            }
-        }
-        if (zipFile.exists()) {
-            try {
-                zipFile.createNewFile();
-            } catch (IOException e) {
-                return result;
-            }
-        }
-
-        FileOutputStream dest = null;
-        ZipOutputStream out = null;
-        try {
-            dest = new FileOutputStream(zipFile);
-            CheckedOutputStream checksum = new CheckedOutputStream(dest, new Adler32());
-            out = new ZipOutputStream(new BufferedOutputStream(checksum));
-            //out.setMethod(ZipOutputStream.DEFLATED);
-            for (String s : sourceFilePath) {
-                compress(new File(s), out, "");
-            }
-            checksum.getChecksum().getValue();
-            result = true;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } finally {
-            if (out != null) {
-                try {
-                    out.closeEntry();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return result;
-    }
-
-
 
     public static final HashMap<String, String> mFileTypes = new HashMap<String, String>();
 
